@@ -1,4 +1,3 @@
-#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -11,7 +10,7 @@ struct NumInfo
 
 struct NumInfo *head = NULL;
 
-int factorPresent(int F)
+struct NumInfo *factorPresent(int F)
 {
     int found = 0;
     struct NumInfo *trav = head;
@@ -20,32 +19,56 @@ int factorPresent(int F)
         if (trav->num == F)
         {
             found = 1;
-            trav->occ += 1;
             break;
         }
     }
-    return found;
+    return trav;
 }
 
 void appendFactors(int F)
 {
-    if (factorPresent(F) != 1)
+    if (factorPresent(F) == NULL)
     {
         struct NumInfo *temp = (struct node *)malloc(sizeof(struct NumInfo));
         temp->num = F;
         temp->occ = 0;
         temp->next = NULL;
     }
+    else
+    {
+        struct NumInfo *ptr = factorPresent(F);
+        ptr->occ += 1;
+    }
 }
 
-double squareRoot(int N)
+int isPrime(int N)
+{
+    int primeStatus = 1;
+    for (int i = 2; i < N / 2; i++)
+    {
+        if (N % i == 0)
+            primeStatus = 0;
+    }
+    return primeStatus;
+}
+
+double SRoot(int N)
 {
     while (N != 1)
     {
-        int i = 2;
-        while (N % i != 0)
+        if (isPrime(N) == 1)
         {
-            i++;
+            appendFactors(N);
+        }
+        else
+        {
+            for (int i = 0; i < N / 2; i++)
+            {
+                if (N % i == 0)
+                {
+                    appendFactors(N / i);
+                }
+            }
         }
     }
 }
