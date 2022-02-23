@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 
 struct NumInfo
 {
@@ -112,25 +111,13 @@ double QRoot()
 
 int main()
 {
-    char uInput[20];
-    printf("Enter numbers: ");
-    fgets(uInput, sizeof(uInput), stdin);
-    printf("Numbers entered are: ");
-    puts(uInput);
+    int N;
+    printf("Enter a number: ");
+    scanf("%d", &N);
 
-    int i = 0;
-    char *array[2];
-    char *chunk = strtok(uInput, " ");
-    while (chunk != NULL)
-    {
-        array[i++] = chunk;
-        chunk = strtok(NULL, " ");
-    }
-
-    int m = atoi(array[0]);
-    int n = atoi(array[1]);
-
-    printf("First number is: %d\n", m);
-    printf("Second number is: %d\n", n);
+    QRootList(N);
+    // printList();
+    double qroot = QRoot();
+    printf("Quadratic root found is: %f", qroot);
     return 0;
 }
