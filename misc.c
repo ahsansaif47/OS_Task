@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <math.h>
+#include <pthread.h>
 
 struct NumInfo
 {
@@ -85,6 +87,31 @@ void QRootList(int N)
     appendFactors(N);
 }
 
+double QRoot()
+{
+    struct NumInfo *trav = head;
+    double RSum = 0;
+    while (trav != NULL)
+    {
+        RSum += pow(trav->num, ((double)trav->occ / 4));
+        trav = trav->next;
+    }
+    return RSum;
+}
+
+void deleteList()
+{
+    struct NumInfo *current = head;
+    struct NumInfo *next;
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+    head = NULL;
+}
+
 void printList()
 {
     printf("\nPrinting factors list.. \n");
@@ -97,16 +124,38 @@ void printList()
     }
 }
 
-double QRoot()
+void *intervalSum(void *args)
 {
-    struct NumInfo *trav = head;
-    double RSum = 0;
-    while (trav != NULL)
+    int *interval_array = *(int *)args;
+    int s = interval_array[0];
+    int e = interval_array[1];
+
+    int i;
+    double sum = 0;
+    for (i = s; i <= e; i++)
     {
-        RSum += pow(trav->num, ((double)trav->occ / 4));
-        trav = trav->next;
+        sum += i;
     }
-    return RSum;
+    printf("%f", sum);
+    return NULL;
+}
+
+double makeIntervals(int m, int n)
+{
+    int sum = 0;
+    int i, start = 1;
+    int end = n / m;
+    int intervalArray[2];
+    for (i = 1; i <= m; i++)
+    {
+        pthread_t i;
+        intervalArray[0] = start;
+        intervalArray[1] = end;
+        pthread_create(&i, NULL, &intervalSum, &intervalArray);
+        start = (end + 1);
+        end = m * (int)(n / m);
+    }
+    return 0.0;
 }
 
 int main()
