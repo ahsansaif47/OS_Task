@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
 
-void *sample()
-{
-    printf("Threads sample..\n");
-}
-
 void *intervalSum(void *args)
 {
     int *interval_array = (int *)args;

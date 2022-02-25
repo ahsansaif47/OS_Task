@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <pthread.h>
 
 struct NumInfo
 {
@@ -32,7 +34,7 @@ void appendFactors(int F)
 {
     if (head == NULL && tail == NULL)
     {
-        struct NumInfo *temp = (struct node *)malloc(sizeof(struct NumInfo));
+        struct NumInfo *temp = (struct NumInfo *)malloc(sizeof(struct NumInfo));
         temp->num = F;
         temp->occ = 1;
         temp->next = NULL;
@@ -43,7 +45,7 @@ void appendFactors(int F)
     {
         if (factorPresent(F) == NULL)
         {
-            struct NumInfo *temp = (struct node *)malloc(sizeof(struct NumInfo));
+            struct NumInfo *temp = (struct NumInfo *)malloc(sizeof(struct NumInfo));
             temp->num = F;
             temp->occ = 1;
             temp->next = NULL;
@@ -99,6 +101,19 @@ void printList()
     }
 }
 
+void deleteList()
+{
+    struct NumInfo *current = head;
+    struct NumInfo *next;
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+    head = NULL;
+}
+
 double QRoot()
 {
     struct NumInfo *trav = head;
@@ -109,6 +124,44 @@ double QRoot()
         trav = trav->next;
     }
     return RSum;
+}
+
+void *intervalSum(void *args)
+{
+    int *interval_array = (int *)args;
+    int s = interval_array[0];
+    int e = interval_array[1];
+
+    int i;
+    double sum = 0;
+    for (i = s; i <= e; i++)
+    {
+        QRootList(i);
+        double qroot = QRoot();
+        sum += qroot;
+        deleteList();
+    }
+
+    printf("%f", sum);
+    return NULL;
+}
+
+void makeIntervals(int m, int n)
+{
+    int i, start = 1;
+    int end = n / m;
+    int intervalArray[2];
+    for (i = 1; i <= m; i++)
+    {
+        pthread_t i;
+        intervalArray[0] = start;
+        printf("Interval start is: %d\n", intervalArray[0]);
+        intervalArray[1] = end;
+        printf("Interval end is: %d\n", intervalArray[1]);
+        pthread_create(&i, NULL, &intervalSum, &intervalArray);
+        start = (end + 1);
+        end = m * (int)(n / m);
+    }
 }
 
 int main()
@@ -133,5 +186,7 @@ int main()
 
     printf("First number is: %d\n", m);
     printf("Second number is: %d\n", n);
+
+    makeIntervals(m, n);
     return 0;
 }

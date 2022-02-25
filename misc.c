@@ -134,13 +134,17 @@ void *intervalSum(void *args)
     double sum = 0;
     for (i = s; i <= e; i++)
     {
-        sum += i;
+        QRootList(i);
+        double qroot = QRoot();
+        sum += qroot;
+        deleteList();
     }
+
     printf("%f", sum);
     return NULL;
 }
 
-double makeIntervals(int m, int n)
+void makeIntervals(int m, int n)
 {
     int sum = 0;
     int i, start = 1;
@@ -155,7 +159,6 @@ double makeIntervals(int m, int n)
         start = (end + 1);
         end = m * (int)(n / m);
     }
-    return 0.0;
 }
 
 int main()
