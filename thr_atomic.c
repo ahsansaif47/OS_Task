@@ -120,7 +120,7 @@ double QRoot()
     double RSum = 0;
     while (trav != NULL)
     {
-        RSum += pow(trav->num, ((double)trav->occ / 4));
+        RSum *= pow(trav->num, ((double)trav->occ / 4));
         trav = trav->next;
     }
     return RSum;
@@ -187,6 +187,10 @@ int main()
     printf("First number is: %d\n", m);
     printf("Second number is: %d\n", n);
 
-    makeIntervals(m, n);
+    QRootList(n);
+    double d = QRoot();
+    printf("%f", d);
+
+    // makeIntervals(m, n);
     return 0;
 }

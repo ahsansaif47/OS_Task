@@ -1,6 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <pthread.h>
+#include <semaphore.h>
+
+sem_t semaphore;
+int th_count = 0;
+double qSum = 0;
 
 struct NumInfo
 {
@@ -32,7 +39,7 @@ void appendFactors(int F)
 {
     if (head == NULL && tail == NULL)
     {
-        struct NumInfo *temp = (struct node *)malloc(sizeof(struct NumInfo));
+        struct NumInfo *temp = (struct NumInfo *)malloc(sizeof(struct NumInfo));
         temp->num = F;
         temp->occ = 1;
         temp->next = NULL;
@@ -43,7 +50,7 @@ void appendFactors(int F)
     {
         if (factorPresent(F) == NULL)
         {
-            struct NumInfo *temp = (struct node *)malloc(sizeof(struct NumInfo));
+            struct NumInfo *temp = (struct NumInfo *)malloc(sizeof(struct NumInfo));
             temp->num = F;
             temp->occ = 1;
             temp->next = NULL;
@@ -69,7 +76,7 @@ int isPrime(int N)
     return primeStatus;
 }
 
-void QRootList(int N)
+double QRootList(int N)
 {
     int i;
     while (!isPrime(N))
@@ -85,15 +92,12 @@ void QRootList(int N)
         N = N / i;
     }
     appendFactors(N);
-}
 
-double QRoot()
-{
     struct NumInfo *trav = head;
-    double RSum = 0;
+    double RSum = 1;
     while (trav != NULL)
     {
-        RSum += pow(trav->num, ((double)trav->occ / 4));
+        RSum *= pow(trav->num, ((double)trav->occ / 4));
         trav = trav->next;
     }
     return RSum;
@@ -124,52 +128,80 @@ void printList()
     }
 }
 
+double qRoot(int N)
+{
+    double sroot = sqrt(N);
+    double qroot = sqrt(sroot);
+    return qroot;
+}
+
 void *intervalSum(void *args)
 {
-    int *interval_array = *(int *)args;
+    int *interval_array = (int *)args;
     int s = interval_array[0];
     int e = interval_array[1];
-
+    printf("Value of s is: %d\n", s);
+    printf("Value of e is: %d\n", e);
     int i;
     double sum = 0;
     for (i = s; i <= e; i++)
     {
-        QRootList(i);
-        double qroot = QRoot();
+        double qroot = qRoot(i);
+        printf("Qroot is: %f\n", qroot);
         sum += qroot;
-        deleteList();
     }
-
-    printf("%f", sum);
+    printf("Sum of interval %d -> %d is: %f\n", s, e, sum);
+    sem_wait(&semaphore);
+    qSum += sum;
+    sem_post(&semaphore);
     return NULL;
 }
 
 void makeIntervals(int m, int n)
 {
-    int sum = 0;
     int i, start = 1;
-    int end = n / m;
-    int intervalArray[2];
-    for (i = 1; i <= m; i++)
+    int end = (int)(n / m);
+    for (i = 0; i <= m; i++)
     {
+        int intervalArray[2];
         pthread_t i;
         intervalArray[0] = start;
         intervalArray[1] = end;
         pthread_create(&i, NULL, &intervalSum, &intervalArray);
+        pthread_join(i, NULL);
         start = (end + 1);
-        end = m * (int)(n / m);
+        end = end + (int)(n / m);
     }
 }
 
 int main()
 {
-    int N;
-    printf("Enter a number: ");
-    scanf("%d", &N);
+    sem_init(&semaphore, 0, 1);
+    char uInput[20];
+    printf("Enter numbers: ");
+    fgets(uInput, sizeof(uInput), stdin);
+    printf("Numbers entered are: ");
+    puts(uInput);
 
-    QRootList(N);
-    // printList();
-    double qroot = QRoot();
-    printf("Quadratic root found is: %f", qroot);
+    int i = 0;
+    char *array[2];
+    char *chunk = strtok(uInput, " ");
+    while (chunk != NULL)
+    {
+        array[i++] = chunk;
+        chunk = strtok(NULL, " ");
+    }
+
+    int m = atoi(array[0]);
+    int n = atoi(array[1]);
+
+    th_count = m;
+    printf("M is: %d\n", m);
+    printf("N is: %d\n", n);
+
+    makeIntervals(m, n);
+    double qR = QRootList(n);
+    printf("Qroot is: ", qR);
+    // printf("QRoot is: %f\n", qR);
     return 0;
 }
